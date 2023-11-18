@@ -629,7 +629,7 @@ public class HashedWheelTimer implements Timer {
                 // 时间轮指针还需要跳多少次 = 等待时间 / 指针跳1次的间隔时间
                 long calculated = timeout.deadline / tickDuration;
 
-                // 剩余回合数(计算出时间轮需要旋转的圈数) = (计算的次数 - 已跳的字数) / 时间轮长度
+                // 剩余回合数(计算出时间轮需要旋转的圈数) = (计算的次数 - 已跳的次数) / 时间轮长度
                 timeout.remainingRounds = (calculated - tick) / wheel.length;
 
                 final long ticks = Math.max(calculated, tick); // Ensure we don't schedule for past.  确保我们不会安排过去的事情。
