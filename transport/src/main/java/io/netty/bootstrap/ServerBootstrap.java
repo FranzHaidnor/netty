@@ -236,7 +236,7 @@ public class ServerBootstrap extends AbstractBootstrap<ServerBootstrap, ServerCh
                     }
                 }
             }
-
+            // 注册到工作线程 Group
             try {
                 childGroup.register(child).addListener(new ChannelFutureListener() {
                     @Override

@@ -90,7 +90,7 @@ public abstract class AbstractNioMessageChannel extends AbstractNioChannel {
                 } catch (Throwable t) {
                     exception = t;
                 }
-
+                // readBuf 中存放了新创建的客户端通道
                 int size = readBuf.size();
                 for (int i = 0; i < size; i ++) {
                     readPending = false;

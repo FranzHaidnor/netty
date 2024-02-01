@@ -523,7 +523,8 @@ public final class NioEventLoop extends SingleThreadEventLoop {
                         nextWakeupNanos.set(curDeadlineNanos);
                         try {
                             if (!hasTasks()) {
-                                strategy = select(curDeadlineNanos);
+                                // k1 使用选择器监听事件 selector.select();
+                                strategy = select(curDeadlineNanos); // 阻塞方法
                             }
                         } finally {
                             // This update is just to help block unnecessary selector wakeups
@@ -550,6 +551,7 @@ public final class NioEventLoop extends SingleThreadEventLoop {
                 if (ioRatio == 100) {
                     try {
                         if (strategy > 0) {
+                            // 关键方法, 处理事件
                             processSelectedKeys();
                         }
                     } finally {
@@ -682,10 +684,12 @@ public final class NioEventLoop extends SingleThreadEventLoop {
         Iterator<SelectionKey> i = selectedKeys.iterator();
         for (;;) {
             final SelectionKey k = i.next();
+            // 获取附件 NioTask
             final Object a = k.attachment();
             i.remove();
 
             if (a instanceof AbstractNioChannel) {
+                // k1 处理事件
                 processSelectedKey(k, (AbstractNioChannel) a);
             } else {
                 @SuppressWarnings("unchecked")
@@ -795,6 +799,7 @@ public final class NioEventLoop extends SingleThreadEventLoop {
     private static void processSelectedKey(SelectionKey k, NioTask<SelectableChannel> task) {
         int state = 0;
         try {
+            // 通道连接准备完毕
             task.channelReady(k.channel(), k);
             state = 1;
         } catch (Exception e) {

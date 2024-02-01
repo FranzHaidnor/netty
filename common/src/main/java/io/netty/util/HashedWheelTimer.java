@@ -611,6 +611,7 @@ public class HashedWheelTimer implements Timer {
         }
 
         private void transferTimeoutsToBuckets() {
+            // 仅传输最大。每个周期 100000 个超时，以防止线程在循环中添加新超时时使工作线程过时。
             // transfer only max. 100000 timeouts per tick to prevent a thread to stale the workerThread when it just
             // adds new timeouts in a loop.
             for (int i = 0; i < 100000; i++) {
@@ -774,10 +775,14 @@ public class HashedWheelTimer implements Timer {
 
         @Override
         public boolean cancel() {
+            // 仅更新状态，它将在下一个tick时从HashedWheelBucket中删除。
             // only update the state it will be removed from HashedWheelBucket on next tick.
             if (!compareAndSetState(ST_INIT, ST_CANCELLED)) {
                 return false;
             }
+            // 如果某个任务应该被取消，我们会将其放入另一个队列，该队列将在每个时钟周期进行处理。所以这意味着我们的 GC 延迟将达到最大值。
+            // 1 个刻度持续时间就足够了。这样我们就可以再次使用 MpscLinkedQueue 并尽可能减少锁定开销。
+
             // If a task should be canceled we put this to another queue which will be processed on each tick.
             // So this means that we will have a GC latency of max. 1 tick duration which is good enough. This way
             // we can make again use of our MpscLinkedQueue and so minimize the locking / overhead as much as possible.
